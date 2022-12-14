@@ -1,0 +1,102 @@
+---
+title: "Narrative Coherence Replication"
+output: html_document
+---
+
+```{r setup}
+
+rm(list=ls())
+
+require(tidyverse)
+require(quanteda)
+require(quanteda.textstats)
+require(quanteda.textplots)
+
+```
+
+# Overview
+
+Data has already been preprocessed and tokenized. 
+
+# Read in Data
+
+```{r Read in Data}
+
+# Load in two tokens objects:
+# One for statements and one for comments
+load("data.Rdata")
+
+```
+
+
+# Figure 2: Keyness for Oath Keepers Statements
+
+```{r}
+
+# Final preprocessing and keyness statistics
+post_key <- post_toks %>% 
+  # Create bigrams of common collocations
+  tokens_compound(phrase(c("United States", "US Constitution", "Supreme Court", "Oath Keeper*", "National Guard", "Trump*", "Maxine Waters", "Ammon Bundy", "Bundy Ranch", "Lavoy Finicum", "El Paso", "Baton Rouge", "Ruby Ridge", "Stewart Rhodes", "Law Enforcement", "First Responders", "Free Speech", "Police Officer*", "Federal Government", "Kim Davis"))) %>% 
+  tokens_tolower() %>%
+  tokens_select(min_nchar = 2) %>% 
+  # Remove stopwords
+  tokens_remove(stopwords("english")) %>% 
+    dfm() %>% 
+      # Calculate keyness statistics
+      textstat_keyness(., target = .$trump_office == 1)
+
+# View keyness table
+rbind(
+  head(post_key, 20),
+  tail(post_key, 20)
+)
+  
+# Figure 2
+post_key %>% 
+  textplot_keyness(labelsize = 3) +
+    labs(y = "Terms", x = expression(chi^{2}), 
+         title = "Keyness for Oath Keepers Statements",
+       subtitle = "Trump Administration versus Pre-Trump Statements") +
+  scale_color_manual(labels = c("Trump", "Pre-Trump"), values = c("navy", "grey")) + 
+  theme(legend.title=element_blank()) +
+  theme(plot.title = element_text(face="bold"))
+
+```
+
+
+# Figure 3: Keyness for Oath Keepers Comments
+
+
+```{r}
+
+# Final preprocessing and keyness statistics
+comment_key <- comments_toks %>% 
+  # Create bigrams from common collocations
+  tokens_compound(phrase(c("United States", "US Constitution", "Supreme Court", "Oath Keeper*", "National Guard", "Trump*", "Maxine Waters", "Ammon Bundy", "Bundy Ranch", "Lavoy Finicum", "El Paso", "Baton Rouge", "Ruby Ridge", "Stewart Rhodes", "Law Enforcement", "First Responders", "Free Speech", "Police Officer*", "Federal Government", "Kim Davis"))) %>% 
+  tokens_tolower() %>%
+  tokens_select(min_nchar = 2) %>% 
+  # Remove stopwords
+  tokens_remove(stopwords("english")) %>% 
+    dfm() %>% 
+      # Calculate keyness statistics
+      textstat_keyness(., target = .$trump_office == 1)
+
+# View keyness table
+rbind(
+  head(comment_key, 20),
+  tail(comment_key, 20)
+)
+  
+  
+# Figure 3
+comment_key %>% 
+  textplot_keyness(labelsize = 3) +
+    labs(y = "Terms", x = expression(chi^{2}), 
+         title = "Keyness for Oath Keepers Comments",
+       subtitle = "Trump Administration versus Pre-Trump Statements") +
+  scale_color_manual(labels = c("Trump", "Pre-Trump"), values = c("navy", "grey")) + 
+  theme(legend.title=element_blank()) +
+  theme(plot.title = element_text(face="bold"))
+
+```
+
